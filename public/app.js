@@ -1,43 +1,35 @@
-const form = document.querySelector('.form_exemplo');
-const nome = document.getElementById('nome');
-const idade = document.getElementById('idade');
-const email = document.getElementById('email');
-const senha = document.getElementById('senha');
-const conf_senha = document.getElementById('conf_senha');
+document.addEventListener('DOMContentLoaded', function () {
+    const formulario = document.getElementById('formulario');
+    const messageElement = document.getElementById('message');
 
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    formulario.addEventListener('submit', function (event) {
+        event.preventDefault();
 
-    const formData = {
-        nome: nome.value,
-        email: email.value,
-        idade: idade.value,
-        senha: senha.value,
-        conf_senha: conf_senha.value
-    };
+        const formData = new FormData(formulario);
 
-    try{
-        const response = await fetch('/registra-usuario', {
+        fetch('/registra-usuario', {
             method: 'POST',
+            body: JSON.stringify(Object.fromEntries(formData)),
             headers: {
-                'Content-Type':'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const result = await response.json();
-        if(result.status == 'failed'){
-            document.getElementById('message').innerHTML = result.message;
-        }
-        else{
-            document.getElementById('message').innerHTML = result.message;
-            nome.value = '';
-            email.value= '';
-            idade.value= '';
-            senha.value = '';
-            conf_senha.value = '';
-        }
-    } catch (error){
-        console.log('Error: ', error);
-    }
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'failed') {
+                    messageElement.className = 'error';
+                    messageElement.innerHTML = data.message;
+                } else if (data.status === 'success') {
+                    messageElement.className = 'success';
+                    messageElement.innerHTML = data.message;
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                messageElement.className = 'error';
+                messageElement.innerHTML = 'Ocorreu um erro ao processar sua solicitação.';
+            });
+    });
 });

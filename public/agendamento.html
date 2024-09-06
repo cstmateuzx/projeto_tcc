@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/check-session')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.loggedin) {
+                        window.location.href = '/login.html';
+                    }
+                });
+        });
+    </script>
+
+
+
+    <h1>Agendamento</h1>
+    <form class="form_exemplo" id="agendamento-form">
+        <label for="data">Data:</label>
+        <input type="date" id="data" name="data" required><br>
+        <label for="hora">Hora:</label>
+        <input type="time" id="hora" name="hora" required><br>
+        <label for="descricao">Descrição:</label>
+        <textarea id="descricao" name="descricao" rows="4" required></textarea><br>
+        <input type="submit" value="Agendar">
+    </form>
+    <button id="logout-button">Logout</button>
+    <div id="message-container">
+        <p id="message"></p>
+    </div>
+    <script src="agendamento.js"></script>
+    <script>
+        document.getElementById('logout-button').addEventListener('click', function () {
+            fetch('/logout')
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = '/login.html';
+                    }
+                });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/check-session')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.loggedin) {
+                        window.location.href = '/login.html';
+                    }
+                });
+        });
+    </script>
+</body>
+
+</html>
