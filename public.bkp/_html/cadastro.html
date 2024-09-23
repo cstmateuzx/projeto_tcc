@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="../_css/styleC.css">
+</head>
+
+<body>
+
+    <header class="header"></header>
+    <section>
+        <a href="../_html/index.html"> <img src="../_img/new_logo.png" alt="logo" class="logo"> </a>
+
+        <nav class="navbar">
+            <a href="../_html/index.html">Home</a>
+            <a href="../_html/login.html">Login</a>
+        </nav>
+    </section>
+    </header>
+
+    <div class="container">
+        <form class="form_exemplo" id="formulario">
+            <h1>Cadastro</h1>
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required><br>
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" required><br>
+            <label for="idade">Idade:</label>
+            <input type="number" id="idade" name="idade" required><br>
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" required><br>
+            <label for="conf_senha">Confirmação de senha:</label>
+            <input type="password" id="conf_senha" name="conf_senha" required><br>
+            <input type="submit" value="Cadastrar">
+        </form>
+        <div id="message-container">
+            <p id="message"></p>
+        </div>
+        <script src="../_js/app.js"></script>
+    </div>
+</body>
+
+</html>
