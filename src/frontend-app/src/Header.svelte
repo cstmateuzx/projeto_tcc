@@ -1,39 +1,3 @@
-<main>
-    <header class="header">
-        <section>
-            <a href=""> <img src="../static/new_logo.png" alt="logo" class="logo" /> </a>
-
-            <nav class="navbar">
-                <a href="#home">Home</a>
-                <a href="#agendamento">Agendamento</a>
-                <a href="#catalogo">Catálogo</a>
-                <a href="#address">Endereço</a>
-            </nav>
-
-            <div class="icons">
-                <a href="">
-                    <img
-                        id="login"
-                        width="30"
-                        height="30"
-                        src="https://img.icons8.com/windows/32/FFFFFF/login-rounded-right.png"
-                        alt="login-rounded-right"
-                    />
-                </a>
-
-                <a href="">
-                    <img
-                        id="cadastro"
-                        width="30"
-                        height="30"
-                        src="https://img.icons8.com/ios-glyphs/30/FFFFFF/task.png"
-                        alt="task"
-                    />
-                </a>
-            </div>
-        </section>
-    </header>
-</main>
 
 <style>
     @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");

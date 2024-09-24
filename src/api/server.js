@@ -151,6 +151,64 @@ app.delete('/usuarios/:id_usuario', (req, res) => {
 
 
 
-app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
-});
+
+
+//Rota para verificação de Login
+
+app.get('/login', (req, res) => {
+            const { emailDigitado, senhaDigitada } = req.body;
+
+            let db = new sqlite3.Database('./users.db', (err) => {
+                if (err) {
+                    return console.error(err.message);
+                }
+                console.log('Conectou no banco de dados!');
+            });
+
+            // Seleciona todos os emails da tabela 'usuario' e verifica com o do campo digitado
+            db.get('SELECT * FROM usuario WHERE email = ?', [emailDigitado], (err, row) => {
+                    if (err) {
+                        return res.status(500).json({
+                            status: 'failed',
+                            message: 'Email não encontrado!',
+                            error: err.message
+                        });
+                    }
+                    if (row) {
+                        bcrypt.compare(senhaDigitada, senha, function(err, res)) {
+                                if (err) {
+                                    return console.error(err.message);
+                                };
+                                if (res) {
+                                    console.log("Login feito com sucesso!")
+                                };
+                                else {
+                                    console.log("senha incorreta")
+                                };
+                            }
+                            // Fecha a conexão com o banco de dados
+                        db.close((err) => {
+                            if (err) {
+                                return console.error(err.message);
+                            }
+                            console.log('Fechou a conexão com o banco de dados.');
+                        });
+
+                        // Retorna os dados dos usuários em formato JSON
+                        res.status(200).json({
+                            status: 'success',
+                            usuarios: row
+                        });
+                    });
+            });
+
+
+
+
+
+
+
+
+        app.listen(port, () => {
+            console.log(`Example app listening at http://localhost:${port}`);
+        });
