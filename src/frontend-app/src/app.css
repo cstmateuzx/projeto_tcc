@@ -23,7 +23,6 @@
     outline: none;
     text-decoration: none;
     border: none;
-    text-transform: capitalize;
     transition: 0.2s linear;
     font-family: "Roboto", sans-serif;
 }

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require("bcryptjs")
@@ -9,6 +10,8 @@ app.use(express.json());
 const port = 3000;
 
 app.use(cors());
+
+app.use(bodyParser.json());
 
 app.get('/usuarios', (req, res) => {
     let db = new sqlite3.Database('./users.db', (err) => {
@@ -154,56 +157,27 @@ app.delete('/usuarios/:id_usuario', (req, res) => {
 
 
 //Rota para verificação de Login
-
-app.get('/login', (req, res) => {
-            const { emailDigitado, senhaDigitada } = req.body;
-
-            let db = new sqlite3.Database('./users.db', (err) => {
-                if (err) {
-                    return console.error(err.message);
-                }
-                console.log('Conectou no banco de dados!');
-            });
-
-            // Seleciona todos os emails da tabela 'usuario' e verifica com o do campo digitado
-            db.get('SELECT * FROM usuario WHERE email = ?', [emailDigitado], (err, row) => {
-                    if (err) {
-                        return res.status(500).json({
-                            status: 'failed',
-                            message: 'Email não encontrado!',
-                            error: err.message
-                        });
-                    }
-                    if (row) {
-                        bcrypt.compare(senhaDigitada, senha, function(err, res)) {
-                                if (err) {
-                                    return console.error(err.message);
-                                };
-                                if (res) {
-                                    console.log("Login feito com sucesso!")
-                                };
-                                else {
-                                    console.log("senha incorreta")
-                                };
-                            }
-                            // Fecha a conexão com o banco de dados
-                        db.close((err) => {
-                            if (err) {
-                                return console.error(err.message);
-                            }
-                            console.log('Fechou a conexão com o banco de dados.');
-                        });
-
-                        // Retorna os dados dos usuários em formato JSON
-                        res.status(200).json({
-                            status: 'success',
-                            usuarios: row
-                        });
-                    });
-            });
-
-
-
+app.post('/login', (req, res) => {
+    const { email, senhaDigitada } = req.body;
+  
+    const sql = 'SELECT * FROM usuario WHERE email = ?';
+    db.get(sql, [email], async (err, row) => {
+      if (err) {
+        return res.status(500).json({ message: 'Erro ao acessar o banco de dados.' });
+      }
+      if (!row) {
+        return res.status(401).json({ message: 'Usuário não encontrado.' });
+      }
+  
+      const match = await bcrypt.compare(senhaDigitada, row.senha);
+      if (match) {
+        return res.status(200).json({ message: 'Login bem-sucedido!' });
+      } else {
+        return res.status(401).json({ message: 'Senha incorreta.' });
+      }
+    });
+  });
+  
 
 
 
