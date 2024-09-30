@@ -72,7 +72,7 @@ app.post('/usuarios/novo', (req, res) => {
             }
             console.log('Conectou no banco de dados!');
         });
-        db.get('SELECT email FROM usuario WHERE email = ?', [email], async(error, result) => {
+        db.get('SELECT email FROM usuario WHERE email = ?', [email], async (error, result) => {
             if (error) {
                 console.log(error)
             } else if (result) {
@@ -128,7 +128,7 @@ app.delete('/usuarios/:id_usuario', (req, res) => {
     });
 
     // Deletar o usuário pelo ID
-    db.run('DELETE FROM usuario WHERE id_usuario = ?', [id_usuario], function(err) {
+    db.run('DELETE FROM usuario WHERE id_usuario = ?', [id_usuario], function (err) {
         if (err) {
             return res.status(500).json({
                 status: 'failed',
@@ -155,34 +155,36 @@ app.delete('/usuarios/:id_usuario', (req, res) => {
 
 
 
+// Rota de login
+app.post('/api/login', (req, res) => {
+    let db = new sqlite3.Database('./users.db');
+    const { email, senha } = req.body;
 
-//Rota para verificação de Login
-app.post('/login', (req, res) => {
-    const { email, senhaDigitada } = req.body;
-  
-    const sql = 'SELECT * FROM usuario WHERE email = ?';
-    db.get(sql, [email], async (err, row) => {
-      if (err) {
-        return res.status(500).json({ message: 'Erro ao acessar o banco de dados.' });
-      }
-      if (!row) {
-        return res.status(401).json({ message: 'Usuário não encontrado.' });
-      }
-  
-      const match = await bcrypt.compare(senhaDigitada, row.senha);
-      if (match) {
-        return res.status(200).json({ message: 'Login bem-sucedido!' });
-      } else {
-        return res.status(401).json({ message: 'Senha incorreta.' });
-      }
-    });
-  });
-  
+    db.get('SELECT * FROM usuario WHERE email = ?', [email], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro no servidor' });
+        }
+        if (!row) {
+            return res.status(401).json({ error: 'Email ou senha incorretos' });
+        }
 
+        // Verifica a senha
+        bcrypt.compare(senha, row.senha, (err, match) => {
+            if (err) {
+                return res.status(500).json({ error: 'Erro no servidor' });
+            }
+            if (!match) {
+                return res.status(401).json({ error: 'Email ou senha incorretos' });
+            }
 
-
-
-
-        app.listen(port, () => {
-            console.log(`Example app listening at http://localhost:${port}`);
+            // Login bem-sucedido
+            res.json({ message: 'Login bem-sucedido', usuario: row });
+            db.close();
         });
+    });
+});
+
+
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`);
+});

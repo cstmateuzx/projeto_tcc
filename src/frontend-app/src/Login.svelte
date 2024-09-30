@@ -1,36 +1,42 @@
 <script>
+    import { onMount } from 'svelte';
     let email = '';
-    let senhaDigitada = '';
+    let senha = '';
     let mensagem = '';
-    let paginaAtual = "login";
-  
-    const verificarLogin = async () => {
-      const resposta = await fetch('/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, senhaDigitada })
-      });
-  
-      const dados = await resposta.json();
-      mensagem = dados.message;
-  
-      if (resposta.ok) {
-        paginaAtual = "home";
-      }
-    };
-  </script>
-  <div>
-    <h1>Login</h1>
-    <input type="email"
-    bind:value={email}
-    placeholder="Email" />
-    <input type="password"
-    bind:value={senhaDigitada}
-    placeholder="Senha" />
-    <button on:click={verificarLogin}>Logar</button>
-    {#if mensagem}
-      <p>{mensagem}</p>
-    {/if}
-  </div>
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, senha }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            mensagem = 'Login bem-sucedido!';
+            // Aqui você pode redirecionar ou armazenar a sessão do usuário
+        } else {
+            mensagem = data.error;
+        }
+    }
+</script>
+
+<form on:submit={handleSubmit}>
+    <label>
+        Email:
+        <input type="email" bind:value={email} required />
+    </label>
+    <label>
+        Senha:
+        <input type="password" bind:value={senha} required />
+    </label>
+    <button type="submit">Login</button>
+</form>
+
+{#if mensagem}
+    <p>{mensagem}</p>
+{/if}
