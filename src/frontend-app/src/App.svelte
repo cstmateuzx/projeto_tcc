@@ -1,6 +1,11 @@
 <script>
-  // import { onMount } from 'svelte';
-  import axios from "axios";
+  import { onMount } from "svelte";
+  import { paginaAtual, irParaLogin, irParaCadastro, irParaHome } from "./stores/navigation";
+  import Home from "./pages/Home.svelte";
+  import Login from "./pages/Login.svelte";
+  import Cadastro from "./pages/Cadastro.svelte";
+  import { get } from "svelte/store";
+  
   let nome = "";
   let email = "";
   let senha = "";
@@ -9,10 +14,10 @@
   let usuarios = null;
   let colunas_usuarios = null;
   const api_base_url = "http://localhost:3000";
-  let paginaAtual = "home";
   let mensagem = "";
   let error = false;
   let resultado = null;
+
 
   const carregarUsuarios = async () => {
     try {
@@ -32,6 +37,8 @@
       usuarios = null; // Limpa o resultado em caso de erro
     }
   };
+
+
 
   const cadastrarUsuario = async () => {
     try {
@@ -61,35 +68,10 @@
     }
   };
 
-  // Função para deletar o usuário pelo ID
+
+
   const deletarUsuario = async (id) => {
-    try {
-      let res = await axios.delete(`${api_base_url}/usuarios/${id}`, {
-        headers: {
-          Accept: "application/json",
-        },
-      });
-      resultado = res.data;
-      error = null;
-      // recarrega lista de usuários apresentada
-      carregarUsuarios();
-    } catch (err) {
-      error =
-        "Erro ao deletar usuário: " +
-        (err.response?.data?.message || err.message);
-      resultado = null;
-    }
-  };
-
-  const irParaLogin = () => {
-    paginaAtual = "login";
-  };
-
-  const irParaHome = () => {
-    paginaAtual = "home";
-  };
-  const irParaCadastro = () => {
-    paginaAtual = "cadastro";
+    // ... (atualizar codigo)
   };
 
   const fazerLogin = async () => {
@@ -107,7 +89,6 @@
         resultado = { message: "Login bem-sucedido!" };
         error = false;
         mensagem = ""; // Limpa a mensagem de erro
-        paginaAtual = "home";
         console.log("Login bem-sucedido:", data);
         email = "";
         senha = "";
@@ -124,166 +105,40 @@
     }
   };
 
+
   carregarUsuarios();
+
+  onMount(() => {
+    carregarUsuarios();
+  });
 </script>
 
-{#if paginaAtual == "home"}
-  <header class="header">
-    <section>
-      <img src="../static/new_logo.png" alt="logo" class="logo" />
-
-      <nav class="navbar">
-        <a href="#home">Home</a>
-        <a href="#agendamento">Agendamento</a>
-        <a href="#catalogo">Catálogo</a>
-        <a href="#address">Endereço</a>
-      </nav>
-
-      <div class="icons">
-        <button on:click={irParaLogin}>
-          <img
-            id="login"
-            width="30"
-            height="30"
-            src="https://img.icons8.com/windows/32/FFFFFF/login-rounded-right.png"
-            alt="login-rounded-right"
-          />
-        </button>
-
-        <button on:click={irParaCadastro}>
-          <img
-            id="cadastro"
-            width="30"
-            height="30"
-            src="https://img.icons8.com/ios-glyphs/30/FFFFFF/task.png"
-            alt="task"
-          />
-        </button>
-      </div>
-    </section>
-  </header>
-
-  <div class="home-container" id="home">
-    <section id="home">
-      <div class="content">
-        <h3>O MELHOR STUDIO DA REGIÃO</h3>
-        <p>
-          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Distinctio
-          recusandae, quo rerum perferendis dolorem quam maxime perspiciatis
-          laudantium voluptas ipsum aut voluptatibus qui fuga laboriosam
-          voluptates porro. Alias, facilis modi!
-        </p>
-      </div>
-    </section>
-  </div>
+{#if $paginaAtual === "home"}
+  <Home irParaLogin={irParaLogin} irParaCadastro={irParaCadastro} />
 {/if}
 
-{#if paginaAtual == "login"}
-  <div class="card">
-    <div class="formulario">
-      <h2>Login</h2>
-      <form on:submit|preventDefault={fazerLogin}>
-        <div>
-          <label for="email"><h2>Email:</h2></label>
-          <input
-            type="email"
-            id="email"
-            bind:value={email}
-            placeholder="Digite o email"
-            required
-          />
-        </div>
-        <div>
-          <label for="senha"><h2>Senha:</h2></label>
-          <input
-            type="password"
-            id="senha"
-            bind:value={senha}
-            placeholder="Digite a senha"
-            required
-          />
-        </div>
-        <div>
-          <button type="submit">Login</button>
-        </div>
-      </form>
-
-      {#if error}
-        <p style="color: red;">{mensagem}</p>
-      {/if}
-      {#if resultado && resultado.message}
-        <p style="color: green;">{resultado.message}</p>
-      {/if}
-    </div>
-  </div>
+{#if $paginaAtual === "login"}
+  <Login 
+    fazerLogin={fazerLogin} 
+    irParaHome={irParaHome}
+    email={email} 
+    senha={senha} 
+    error={error} 
+    mensagem={mensagem} 
+    resultado={resultado} 
+  />
 {/if}
 
-{#if paginaAtual == "cadastro"}
-  <div class="card">
-    <div class="formulario">
-      <h2>Cadastrar Usuário</h2>
-      <form on:submit|preventDefault={cadastrarUsuario}>
-        <div>
-          <label for="nome"><h2>Nome:</h2></label>
-          <input
-            type="text"
-            id="nome"
-            bind:value={nome}
-            placeholder="Digite o nome"
-            required
-          />
-        </div>
-        <div>
-          <label for="email"><h2>Email:</h2></label>
-          <input
-            type="email"
-            id="email"
-            bind:value={email}
-            placeholder="Digite o email"
-            required
-          />
-        </div>
-        <div>
-          <label for="idade"><h2>Idade:</h2></label>
-          <input
-            type="number"
-            id="idade"
-            bind:value={idade}
-            placeholder="Digite sua idade"
-            required
-          />
-        </div>
-        <div>
-          <label for="senha"><h2>Senha:</h2></label>
-          <input
-            type="password"
-            id="senha"
-            bind:value={senha}
-            placeholder="Digite a senha"
-            required
-          />
-        </div>
-        <div>
-          <label for="conf_senha"><h2>Confirme a Senha:</h2></label>
-          <input
-            type="password"
-            id="conf_senha"
-            bind:value={conf_senha}
-            placeholder="Confirme a senha"
-            required
-          />
-        </div>
-        <div>
-          <button type="submit">Cadastrar</button>
-        </div>
-      </form>
-
-      {#if error}
-        <p style="color: red;">{error}</p>
-      {/if}
-      {#if resultado && resultado.message}
-        <p style="color: green;">{resultado.message}</p>
-      {/if}
-    </div>
-  </div>
+{#if $paginaAtual === "cadastro"}
+  <Cadastro 
+    cadastrarUsuario={cadastrarUsuario} 
+    irParaHome={irParaHome}
+    nome={nome} 
+    email={email} 
+    idade={idade} 
+    senha={senha} 
+    conf_senha={conf_senha} 
+    error={error} 
+    resultado={resultado} 
+  />
 {/if}

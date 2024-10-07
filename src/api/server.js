@@ -155,6 +155,7 @@ app.delete('/usuarios/:id_usuario', (req, res) => {
 
 
 
+
 // Rota de login
 app.post('/api/login', (req, res) => {
     let db = new sqlite3.Database('./users.db');
