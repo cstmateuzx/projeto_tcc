@@ -1,5 +1,6 @@
 <script>
-  export let cadastrarUsuario;
+    import { onMount } from "svelte";
+    import axios from "axios";
   export let nome;
   export let email;
   export let idade;
@@ -7,6 +8,66 @@
   export let conf_senha;
   export let error;
   export let resultado;
+  export let usuarios;
+  export let colunas_usuarios;
+  import { api_base_url } from "../stores/navigation";
+
+
+  const carregarUsuarios = async () => {
+    try {
+      let res = await axios.get(api_base_url + "/usuarios", {
+        responseType: "json",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+      usuarios = res.data.usuarios;
+      colunas_usuarios = Object.keys(usuarios[0]);
+      error = null; // Limpa o erro se a requisição for bem-sucedida
+    } catch (err) {
+      error =
+        "Erro ao buscar dados: " + err.response?.data?.message || err.message;
+      console.error(err);
+      usuarios = null; // Limpa o resultado em caso de erro
+    }
+  };
+
+
+
+  const cadastrarUsuario = async () => {
+    try {
+      let res = await axios.post(
+        api_base_url + "/usuarios/novo",
+        {
+          nome,
+          email,
+          idade,
+          senha,
+          conf_senha,
+        },
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+      resultado = res.data;
+      error = null; // Limpa o erro se a requisição for bem-sucedida
+      // recarrega lista de usuários apresentada
+      carregarUsuarios();
+    } catch (err) {
+      error =
+        "Erro ao enviar dados: " + err.response?.data?.message || err.message;
+      resultado = null; // Limpa o resultado em caso de erro
+    }
+  };
+  
+  carregarUsuarios();
+
+  onMount(() => {
+    carregarUsuarios();
+  });
+
 </script>
 
 <div class="card">

@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require("bcryptjs")
 
@@ -49,6 +48,7 @@ app.get('/usuarios', (req, res) => {
 
 
 app.post('/usuarios/novo', (req, res) => {
+    console.log("Entrou no cadsatro");
     const { nome, email, idade, senha, conf_senha } = req.body;
     console.log(req);
     // Aqui começa a validação dos campos do formulário
@@ -92,7 +92,7 @@ app.post('/usuarios/novo', (req, res) => {
                     email, idade, senha_criptografada
                 ], (error2) => {
                     if (error2) {
-                        console.log(error2)
+                        console.log(error2) 
                     } else {
                         db.close((err) => {
                             if (err) {
@@ -160,13 +160,12 @@ app.delete('/usuarios/:id_usuario', (req, res) => {
 app.post('/api/login', (req, res) => {
     let db = new sqlite3.Database('./users.db');
     const { email, senha } = req.body;
-
     db.get('SELECT * FROM usuario WHERE email = ?', [email], (err, row) => {
         if (err) {
             return res.status(500).json({ error: 'Erro no servidor' });
         }
         if (!row) {
-            return res.status(401).json({ error: 'Email ou senha incorretos' });
+            return res.status(401).json({ error: 'Email inexistente' });
         }
 
         // Verifica a senha
@@ -175,7 +174,7 @@ app.post('/api/login', (req, res) => {
                 return res.status(500).json({ error: 'Erro no servidor' });
             }
             if (!match) {
-                return res.status(401).json({ error: 'Email ou senha incorretos' });
+                return res.status(401).json({ error: 'Senha incorret' });
             }
 
             // Login bem-sucedido

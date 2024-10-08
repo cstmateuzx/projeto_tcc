@@ -1,6 +1,7 @@
 <script>
     export let irParaLogin;
     export let irParaCadastro;
+    import { api_base_url } from "../stores/navigation";
   </script>
   
   <header class="header">

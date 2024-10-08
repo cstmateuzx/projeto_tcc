@@ -13,3 +13,5 @@ export const irParaCadastro = () => {
 export const irParaHome = () => {
   paginaAtual.set("home");
 };
+
+export const api_base_url = "http://localhost:3000";

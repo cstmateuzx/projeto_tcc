@@ -1,12 +1,47 @@
 <script>
     import { irParaHome } from "../stores/navigation";
 
-    export let fazerLogin;
     export let email;
     export let senha;
     export let error;
     export let mensagem;
     export let resultado;
+    import { api_base_url } from "../stores/navigation";
+
+
+    
+  const fazerLogin = async () => {
+    try {
+      const res = await fetch(api_base_url + "/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, senha }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        resultado = { message: "Login bem-sucedido!" };
+        error = false;
+        mensagem = ""; // Limpa a mensagem de erro
+        console.log("Login bem-sucedido:", data);
+        email = "";
+        senha = "";
+      } else {
+        resultado = null;
+        error = true;
+        mensagem = data.error || data.message || "Erro ao fazer login.";
+        console.log("Erro no login:", mensagem);
+      }
+    } catch (err) {
+      error = true;
+      mensagem = "Erro de conexão. Tente novamente.";
+      console.error("Erro de conexão:", err);
+    }
+  };
+
+
   </script>
   
   <div class="card">
