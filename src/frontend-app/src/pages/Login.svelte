@@ -57,10 +57,10 @@
           <input type="password" id="senha" bind:value={senha} placeholder="Digite a senha" required />
         </div>
         <div>
-          <button type="submit">Login</button>
+          <button type="submit" class="btn btn-outline-success" style="height: 40px; width: 90px;">Login</button>
         </div>
         <div>
-          <button on:click={irParaHome}>voltar</button>
+          <button type="button" class="btn btn-outline-warning" on:click={irParaHome} style="height: 40px; width: 90px;">Voltar</button>
         </div>
       </form>
       {#if error}

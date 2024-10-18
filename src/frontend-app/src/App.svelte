@@ -1,10 +1,9 @@
 <script>
-  import { onMount } from "svelte";
   import { paginaAtual, irParaLogin, irParaCadastro, irParaHome } from "./stores/navigation";
   import Home from "./pages/Home.svelte";
   import Login from "./pages/Login.svelte";
   import Cadastro from "./pages/Cadastro.svelte";
-  import axios from "axios";
+
   
   let nome = "";
   let email = "";

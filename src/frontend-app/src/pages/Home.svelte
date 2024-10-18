@@ -7,12 +7,6 @@
   <header class="header">
     <section>
       <img src="../static/new_logo.png" alt="logo" class="logo" />
-      <nav class="navbar">
-        <a href="#home">Home</a>
-        <a href="#agendamento">Agendamento</a>
-        <a href="#catalogo">Catálogo</a>
-        <a href="#address">Endereço</a>
-      </nav>
       <div class="icons">
         <button on:click={irParaLogin}>
           <img id="login" width="30" height="30" src="https://img.icons8.com/windows/32/FFFFFF/login-rounded-right.png" alt="login-rounded-right" />
