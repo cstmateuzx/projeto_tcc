@@ -1,29 +1,18 @@
+<!-- src/components/Home.svelte -->
 <script>
-    export let irParaLogin;
-    export let irParaCadastro;
-    import { api_base_url } from "../stores/navigation";
-  </script>
-  
-  <header class="header">
-    <section>
-      <img src="../static/new_logo.png" alt="logo" class="logo" />
-      <div class="icons">
-        <button on:click={irParaLogin}>
-          <img id="login" width="30" height="30" src="https://img.icons8.com/windows/32/FFFFFF/login-rounded-right.png" alt="login-rounded-right" />
-        </button>
-        <button on:click={irParaCadastro}>
-          <img id="cadastro" width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/FFFFFF/task.png" alt="task" />
-        </button>
-      </div>
-    </section>
-  </header>
-  
-  <div class="home-container" id="home">
-    <section id="home">
-      <div class="content">
-        <h3>O MELHOR STUDIO DA REGIÃO</h3>
-        <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit...</p>
-      </div>
-    </section>
+  import { irParaLogin } from "../stores/navigation";
+  import { irParaAgendamento } from "../stores/navigation";
+  import { irParaCadastro } from "../stores/navigation";
+  import { irParaHome } from "../stores/navigation";
+  import { api_base_url } from "../stores/navigation";
+</script>
+
+<div class="container mt-5">
+  <div class="jumbotron text-center">
+    <h1 class="display-4">Bem-vindo ao BXD-TATTOO</h1>
+    <p class="lead">Explore o estúdio e conheça nosso trabalho.</p>
+    <button class="btn btn-primary" on:click={irParaAgendamento}>Agendamento</button>
+    <button class="btn btn-primary" on:click={irParaLogin}>Login</button>
+    <button class="btn btn-secondary ms-2" on:click={irParaCadastro}>Cadastrar-se</button>
   </div>
-  
+</div>

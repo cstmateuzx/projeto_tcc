@@ -1,186 +1,134 @@
+// src/api/server.js
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
-const bcrypt = require("bcryptjs")
+require('dotenv').config(); // Importa as variáveis de ambiente
 
 const app = express();
-app.use(express.json());
-const port = 3000;
+const db = new sqlite3.Database('./users.db'); // Conecta ao banco de dados SQLite
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: 'http://localhost:5173' })); // Permite requisições de outros domínios
+app.use(express.json()); // Use express.json() em vez de body-parser
+app.use(cookieParser());
 
-app.use(bodyParser.json());
-
-app.get('/usuarios', (req, res) => {
-    let db = new sqlite3.Database('./users.db', (err) => {
-        if (err) {
-            return console.error(err.message);
-        }
-        console.log('Conectou no banco de dados!');
-    });
-
-    // Seleciona todos os usuários da tabela 'usuario'
-    db.all('SELECT * FROM usuario', [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                status: 'failed',
-                message: 'Erro ao consultar o banco de dados!',
-                error: err.message
-            });
-        }
-
-        // Fecha a conexão com o banco de dados
-        db.close((err) => {
-            if (err) {
-                return console.error(err.message);
-            }
-            console.log('Fechou a conexão com o banco de dados.');
-        });
-
-        // Retorna os dados dos usuários em formato JSON
-        res.status(200).json({
-            status: 'success',
-            usuarios: rows
-        });
-    });
-});
-
-
-app.post('/usuarios/novo', (req, res) => {
-    console.log("Entrou no cadsatro");
-    const { nome, email, idade, senha, conf_senha } = req.body;
-    console.log(req);
-    // Aqui começa a validação dos campos do formulário
-    let erro = "";
-    if (nome.length < 1 || email.length < 1 || idade.length < 1 || senha.length < 1 || conf_senha.length < 1) {
-        erro += 'Por favor, preencha todos os campos corretamente!';
+const verificarCredenciais = (email, senha, callback) => {
+  db.get('SELECT * FROM usuario WHERE email = ?', [email], (err, row) => {
+    if (err) {
+      console.error('Erro ao consultar o banco de dados:', err);
+      return callback(err);
     }
-    if (senha != conf_senha) {
-        erro += 'As senhas digitadas não são iguais!';
+    console.log('Usuário encontrado:', row); // Log do usuário encontrado
+
+    if (row) {
+      console.log(`Senha fornecida: ${senha}, Senha armazenada: ${row.senha}`); // Log das senhas
+      if (row.senha === senha) { // Lembre-se de implementar hashing de senha para produção
+        return callback(null, row);
+      }
     }
-    if (erro) {
-        res.status(500).json({
-            status: 'failed',
-            message: erro,
-        });
-    } else {
-        // aqui começa o código para inserir o registro no banco de dados
-        let db = new sqlite3.Database('./users.db', (err) => {
-            if (err) {
-                return console.error(err.message);
-            }
-            console.log('Conectou no banco de dados!');
-        });
-        db.get('SELECT email FROM usuario WHERE email = ?', [email], async (error, result) => {
-            if (error) {
-                console.log(error)
-            } else if (result) {
-                db.close((err) => {
-                    if (err) {
-                        return console.error(err.message);
-                    }
-                    console.log('Fechou a conexão com o banco de dados.');
-                });
-                return res.status(500).json({
-                    status: 'failed',
-                    message: 'Este e-mail já está em uso!',
-                });
-            } else {
-                let senha_criptografada = await bcrypt.hash(senha, 8)
-                db.run('INSERT INTO usuario(nome, email, idade, senha) VALUES (?, ?, ?, ?)', [nome,
-                    email, idade, senha_criptografada
-                ], (error2) => {
-                    if (error2) {
-                        console.log(error2) 
-                    } else {
-                        db.close((err) => {
-                            if (err) {
-                                return console.error(err.message);
-                            }
-                            console.log('Fechou a conexão com o banco de dados.');
-                        });
-                        return res.status(200).json({
-                            status: 'success',
-                            message: 'Registro feito com sucesso!',
-                            campos: req.body
-                        });
-                    }
-                });
-            }
-        });
-    }
-});
 
-app.delete('/usuarios/:id_usuario', (req, res) => {
-    const { id_usuario } = req.params;
+    return callback(null, null);
+  });
+};
 
-    // Conectar ao banco de dados SQLite
-    let db = new sqlite3.Database('./users.db', (err) => {
-        if (err) {
-            return res.status(500).json({
-                status: 'failed',
-                message: 'Erro ao conectar ao banco de dados!',
-                error: err.message
-            });
-        }
-        console.log('Conectou no banco de dados!');
-    });
-
-    // Deletar o usuário pelo ID
-    db.run('DELETE FROM usuario WHERE id_usuario = ?', [id_usuario], function (err) {
-        if (err) {
-            return res.status(500).json({
-                status: 'failed',
-                message: 'Erro ao tentar remover o usuário ${id_usuario}!',
-                error: err.message
-            });
-        }
-        // Fechar a conexão com o banco de dados
-        db.close((err) => {
-            if (err) {
-                return console.error(err.message);
-            }
-            console.log('Fechou a conexão com o banco de dados.');
-        });
-
-        // Retornar uma resposta de sucesso
-        return res.status(200).json({
-            status: 'success',
-            message: `Usuário com id ${id_usuario} removido com sucesso!`
-        });
-    });
-});
 
 // Rota de login
 app.post('/api/login', (req, res) => {
-    let db = new sqlite3.Database('./users.db');
-    const { email, senha } = req.body;
-    db.get('SELECT * FROM usuario WHERE email = ?', [email], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: 'Erro no servidor' });
-        }
-        if (!row) {
-            return res.status(401).json({ error: 'Email inexistente' });
-        }
+  const { email, senha } = req.body;
 
-        // Verifica a senha
-        bcrypt.compare(senha, row.senha, (err, match) => {
-            if (err) {
-                return res.status(500).json({ error: 'Erro no servidor' });
-            }
-            if (!match) {
-                return res.status(401).json({ error: 'Senha incorret' });
-            }
+  verificarCredenciais(email, senha, (err, usuario) => {
+    if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
+    if (!usuario) return res.status(401).json({ message: 'Credenciais inválidas.' });
 
-            // Login bem-sucedido
-            res.json({ message: 'Login bem-sucedido', usuario: row });
-            db.close();
-        });
+    const token = jwt.sign({ id: usuario.id_usuario }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Configure o cookie com o token
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use HTTPS em produção
+      sameSite: 'Strict', // Ou 'Lax'
+      maxAge: 3600000, // 1 hora
     });
+
+    return res.status(200).json({ message: 'Login bem-sucedido!', token }); // Incluindo token na resposta
+  });
 });
 
+// Endpoint para verificar o usuário logado
+app.get('/api/usuarios/me', (req, res) => {
+  const token = req.cookies.token;
 
-app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+  if (!token) return res.status(401).json({ message: 'Não autorizado.' });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ message: 'Token inválido.' });
+
+    db.get('SELECT * FROM usuario WHERE id_usuario = ?', [decoded.id], (err, usuario) => {
+      if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
+      res.json(usuario);
+    });
+  });
+});
+
+// Rota para cadastrar um novo usuário
+app.post('/usuarios/novo', (req, res) => {
+  const { nome, email, idade, senha } = req.body;
+
+  // Verifique se o email já está cadastrado
+  db.get('SELECT * FROM usuario WHERE email = ?', [email], (err, row) => {
+    if (err) {
+      return res.status(500).json({ message: 'Erro ao verificar email.' });
+    }
+    if (row) {
+      return res.status(400).json({ message: 'Email já cadastrado.' });
+    }
+
+    // Implementar validação e hashing de senha para produção
+    db.run('INSERT INTO usuario (nome, email, idade, senha) VALUES (?, ?, ?, ?)', [nome, email, idade, senha], function (err) {
+      if (err) {
+        return res.status(500).json({ message: 'Erro ao cadastrar usuário.' });
+      }
+      return res.status(201).json({ id: this.lastID, message: 'Usuário cadastrado com sucesso!' });
+    });
+  });
+});
+
+// Rota para listar todos os usuários (protegida por autenticação)
+app.get('/usuarios', (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) return res.status(401).json({ message: 'Não autorizado.' });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err) => {
+    if (err) return res.status(401).json({ message: 'Token inválido.' });
+
+    db.all('SELECT id_usuario, nome, email, idade FROM usuario', [], (err, rows) => {
+      if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
+      res.json({ usuarios: rows });
+    });
+  });
+});
+
+// Rota para deletar um usuário por ID (protegida por autenticação)
+app.delete('/usuarios/:id_usuario', (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) return res.status(401).json({ message: 'Não autorizado.' });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err) => {
+    if (err) return res.status(401).json({ message: 'Token inválido.' });
+
+    const { id_usuario } = req.params;
+    db.run('DELETE FROM usuario WHERE id_usuario = ?', id_usuario, function (err) {
+      if (err) return res.status(500).json({ message: 'Erro ao deletar usuário.' });
+      res.json({ message: 'Usuário deletado com sucesso!' });
+    });
+  });
+});
+
+// Inicie o servidor
+const httpPort = 3000; // Porta do servidor HTTP
+app.listen(httpPort, () => {
+  console.log(`Servidor HTTP rodando na porta ${httpPort}`);
 });
