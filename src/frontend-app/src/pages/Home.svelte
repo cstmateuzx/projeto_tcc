@@ -12,7 +12,6 @@
     <h1 class="display-4">Bem-vindo ao BXD-TATTOO</h1>
     <p class="lead">Explore o estúdio e conheça nosso trabalho.</p>
     <button class="btn btn-primary" on:click={irParaAgendamento}>Agendamento</button>
-    <button class="btn btn-primary" on:click={irParaLogin}>Login</button>
     <button class="btn btn-secondary ms-2" on:click={irParaCadastro}>Cadastrar-se</button>
   </div>
 </div>

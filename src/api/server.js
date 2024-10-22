@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 require('dotenv').config(); // Importa as variáveis de ambiente
@@ -13,25 +14,23 @@ app.use(cors({ credentials: true, origin: 'http://localhost:5173' })); // Permit
 app.use(express.json()); // Use express.json() em vez de body-parser
 app.use(cookieParser());
 
+
+// Função para verificar as credenciais do usuário utilizando bcrypt.compare
 const verificarCredenciais = (email, senha, callback) => {
   db.get('SELECT * FROM usuario WHERE email = ?', [email], (err, row) => {
-    if (err) {
-      console.error('Erro ao consultar o banco de dados:', err);
-      return callback(err);
-    }
-    console.log('Usuário encontrado:', row); // Log do usuário encontrado
+    if (err) return callback(err);
+    if (!row) return callback(null, null); // Usuário não encontrado
 
-    if (row) {
-      console.log(`Senha fornecida: ${senha}, Senha armazenada: ${row.senha}`); // Log das senhas
-      if (row.senha === senha) { // Lembre-se de implementar hashing de senha para produção
-        return callback(null, row);
+    bcrypt.compare(senha, row.senha, (err, isMatch) => {
+      if (err) return callback(err);
+      if (isMatch) {
+        return callback(null, row); // Credenciais corretas
+      } else {
+        return callback(null, null); // Senha incorreta
       }
-    }
-
-    return callback(null, null);
+    });
   });
 };
-
 
 // Rota de login
 app.post('/api/login', (req, res) => {
@@ -84,12 +83,19 @@ app.post('/usuarios/novo', (req, res) => {
       return res.status(400).json({ message: 'Email já cadastrado.' });
     }
 
-    // Implementar validação e hashing de senha para produção
-    db.run('INSERT INTO usuario (nome, email, idade, senha) VALUES (?, ?, ?, ?)', [nome, email, idade, senha], function (err) {
+    // Hash da senha antes de salvar no banco de dados
+    bcrypt.hash(senha, 10, (err, hashedPassword) => {
       if (err) {
-        return res.status(500).json({ message: 'Erro ao cadastrar usuário.' });
+        return res.status(500).json({ message: 'Erro ao gerar hash da senha.' });
       }
-      return res.status(201).json({ id: this.lastID, message: 'Usuário cadastrado com sucesso!' });
+
+      // Inserir o novo usuário com a senha criptografada
+      db.run('INSERT INTO usuario (nome, email, idade, senha) VALUES (?, ?, ?, ?)', [nome, email, idade, hashedPassword], function (err) {
+        if (err) {
+          return res.status(500).json({ message: 'Erro ao cadastrar usuário.' });
+        }
+        return res.status(201).json({ id: this.lastID, message: 'Usuário cadastrado com sucesso!' });
+      });
     });
   });
 });

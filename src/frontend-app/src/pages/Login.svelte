@@ -1,7 +1,7 @@
 <script>
   import { sessionStore } from "../stores/session"; // Para armazenar o token
-  import { irParaHome } from "../stores/navigation"; // Para redirecionar
-  import { api_base_url } from "../stores/navigation"; // Para usar a URL da API
+  import { irParaHome, irParaCadastro} from "../stores/navigation"; // Para redirecionar
+  import { api_base_url } from "../stores/navigation"; // Base da URL da API
 
   let email = "";
   let senha = "";
@@ -9,22 +9,25 @@
   let mensagem = "";
   let resultado = null;
 
+  // Função para fazer login
   const fazerLogin = async () => {
     try {
-      const res = await fetch(`${api_base_url}/api/login`, { // Adicionando template string
+      const res = await fetch(`${api_base_url}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, senha }),
+        credentials: 'include' // Importante para que cookies de sessão JWT sejam enviados e recebidos
       });
 
+      // Tratamento da resposta
       const data = await res.json();
       if (res.ok) {
         resultado = { message: "Login bem-sucedido!" };
         error = false;
         mensagem = ""; // Limpa a mensagem de erro
-        sessionStore.set(data.token); // Salva o token no sessionStore
+        sessionStore.set(data.token); // Armazena o token JWT no sessionStore
         email = "";
         senha = "";
         irParaHome(); // Redireciona para a página inicial
@@ -36,7 +39,7 @@
     } catch (err) {
       error = true;
       mensagem = "Erro de conexão. Tente novamente.";
-      console.error("Erro de conexão:", err); // Adicionando log de erro para debug
+      console.error("Erro de conexão:", err); // Log do erro para debug
     }
   };
 </script>
@@ -57,6 +60,8 @@
           </div>
           <button type="submit" class="btn btn-success w-100">Entrar</button>
         </form>
+        <p class="fs-5 pt-">Não possui cadastro?</p>
+        <button on:click={irParaCadastro} class="btn btn-success w-100">Cadastre-se</button>
         {#if error}
           <p style="color: red;">{mensagem}</p>
         {/if}

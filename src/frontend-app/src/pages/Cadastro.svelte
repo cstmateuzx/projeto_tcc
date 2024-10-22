@@ -10,7 +10,7 @@
   export let resultado;
   export let usuarios;
   export let colunas_usuarios;
-  import { api_base_url } from "../stores/navigation";
+  import { api_base_url, irParaLogin, paginaAtual } from "../stores/navigation";
 
   const carregarUsuarios = async () => {
     try {
@@ -24,7 +24,6 @@
       colunas_usuarios = Object.keys(usuarios[0]);
       error = null; // Limpa o erro se a requisição for bem-sucedida
     } catch (err) {
-      error = "Erro ao buscar dados: " + err.response?.data?.message || err.message;
       console.error(err);
       usuarios = null; // Limpa o resultado em caso de erro
     }
@@ -51,8 +50,8 @@
       error = null; // Limpa o erro se a requisição for bem-sucedida
       // recarrega lista de usuários apresentada
       carregarUsuarios();
+      irParaLogin(); // Redireciona para página de Login
     } catch (err) {
-      error = "Erro ao enviar dados: " + err.response?.data?.message || err.message;
       resultado = null; // Limpa o resultado em caso de erro
     }
   };
@@ -64,29 +63,43 @@
   });
 </script>
 
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <h2 class="text-center mb-4">Cadastrar-se</h2>
-      <form>
-        <div class="mb-3">
-          <label for="nome" class="form-label">Nome</label>
-          <input type="text" class="form-control" id="nome" bind:value={nome} placeholder="Digite seu nome" />
-        </div>
-        <div class="mb-3">
-          <label for="email" class="form-label">Email</label>
-          <input type="email" class="form-control" id="email" bind:value={email} placeholder="Digite seu email" />
-        </div>
-        <div class="mb-3">
-          <label for="idade" class="form-label">Idade</label>
-          <input type="number" class="form-control" id="idade" bind:value={idade} placeholder="Digite sua idade" />
-        </div>
-        <div class="mb-3">
-          <label for="senha" class="form-label">Senha</label>
-          <input type="password" class="form-control" id="senha" bind:value={senha} placeholder="Digite sua senha" />
-        </div>
-        <button type="button" class="btn btn-primary w-100" on:click={cadastrarUsuario}>Cadastrar</button>
-      </form>
+<main>
+  <div class="container mt-5">
+    <div class="row justify-content-center m-auto align-items-center d-flex" style="width: 600px; padding-top: 100px; padding-bottom: 100px;">
+      <div class="col-md-5">
+        <h2 class="text-center mb-4">Cadastrar-se</h2>
+        <form on:submit|preventDefault={cadastrarUsuario}>
+          <div class="mb-3">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="nome" bind:value={nome} placeholder="Digite seu nome" required />
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" bind:value={email} placeholder="Digite seu email" required />
+          </div>
+          <div class="mb-3">
+            <label for="idade" class="form-label">Idade</label>
+            <input type="number" class="form-control" id="idade" bind:value={idade} placeholder="Digite sua idade" required />
+          </div>
+          <div class="mb-3">
+            <label for="senha" class="form-label">Senha</label>
+            <input type="password" class="form-control" id="senha" bind:value={senha} placeholder="Digite sua senha" required />
+          </div>
+          <div class="mb-3">
+            <label for="conf_senha" class="form-label">Confirme sua senha</label>
+            <input type="password" class="form-control" id="conf_senha" bind:value={conf_senha} placeholder="Confirme sua senha" required />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
+        </form>
+        <p class="fs-5 pt-">Já possui cadastro?</p>
+        <button on:click={irParaLogin} class="btn btn-success w-100">Logar-se</button>
+        {#if error}
+          <p style="color: red;">{error}</p>
+        {/if}
+        {#if resultado && resultado.message}
+          <p style="color: green;">{resultado.message}</p>
+        {/if}
+      </div>
     </div>
   </div>
-</div>
+</main>

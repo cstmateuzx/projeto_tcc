@@ -3,6 +3,7 @@
   import Home from "./pages/Home.svelte";
   import Login from "./pages/Login.svelte";
   import Cadastro from "./pages/Cadastro.svelte";
+    import Agendamento from "./pages/Agendamento.svelte";
 
   
   let nome = "";
@@ -43,4 +44,9 @@
     error={error} 
     resultado={resultado} 
   />
+{/if}
+
+
+{#if $paginaAtual === "agendamento"}
+  <Agendamento/>
 {/if}
