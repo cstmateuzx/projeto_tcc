@@ -62,8 +62,7 @@ app.get('/api/usuarios/me', (req, res) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ message: 'Token inválido.' });
-
-    db.get('SELECT * FROM usuario WHERE id_usuario = ?', [decoded.id], (err, usuario) => {
+    db.get('SELECT * FROM usuario WHERE id_usuario = ?', [decoded.id], (err, usuario) => {      
       if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
       res.json(usuario);
     });
@@ -99,6 +98,17 @@ app.post('/usuarios/novo', (req, res) => {
     });
   });
 });
+
+// Rota de logout
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+  });
+  return res.status(200).json({ message: 'Logout realizado com sucesso!' });
+});
+
 
 // Rota para listar todos os usuários (protegida por autenticação)
 app.get('/usuarios', (req, res) => {

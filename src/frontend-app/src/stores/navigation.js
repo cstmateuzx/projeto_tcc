@@ -6,13 +6,7 @@ export const paginaAtual = writable("login");
 
 // Função para redirecionar para a página de login
 export const irParaLogin = () => {
-  sessionStore.subscribe((token) => {
-    if (!token) {
-      paginaAtual.set("login"); // Redireciona se o usuário não estiver logado
-    } else {
-      paginaAtual.set("home"); // Se estiver logado, redireciona para home
-    }
-  });
+  paginaAtual.set("login")
 };
 
 // Função para redirecionar para a página de agendamento
