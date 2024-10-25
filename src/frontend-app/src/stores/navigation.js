@@ -9,6 +9,11 @@ export const irParaLogin = () => {
   paginaAtual.set("login")
 };
 
+//Cadastro de ADM (Teste)
+export const irParaCadastroADM = () => {
+  paginaAtual.set("cadadm")
+};
+
 // Função para redirecionar para a página de agendamento
 export const irParaAgendamento = () => {
   sessionStore.subscribe((token) => {

@@ -1,6 +1,6 @@
 <script>
   import { sessionStore } from "../stores/session"; // Para armazenar o token
-  import { irParaHome, irParaCadastro} from "../stores/navigation"; // Para redirecionar
+  import { irParaHome, irParaCadastro, irParaCadastroADM} from "../stores/navigation"; // Para redirecionar
   import { api_base_url } from "../stores/navigation"; // Base da URL da API
 
   let email = "";
@@ -62,6 +62,8 @@
         </form>
         <p class="fs-5 pt-">Não possui cadastro?</p>
         <button on:click={irParaCadastro} class="btn btn-success w-100">Cadastre-se</button>
+        <p class="fs-5 pt-">Cadastrar ADM</p>
+        <button on:click={irParaCadastroADM} class="btn btn-success w-100">Cadastre ADM aqui</button>
         {#if error}
           <p style="color: red;">{mensagem}</p>
         {/if}

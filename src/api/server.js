@@ -98,6 +98,35 @@ app.post('/usuarios/novo', (req, res) => {
     });
   });
 });
+// Rota para cadastrar um novo adm
+app.post('/adm/novo', (req, res) => {
+  const { nome, user, senha } = req.body;
+
+  // Verifique se o user já está cadastrado
+  db.get('SELECT * FROM adm WHERE user = ?', [user], (err, row) => {
+    if (err) {
+      return res.status(500).json({ message: 'Erro ao verificar user.' });
+    }
+    if (row) {
+      return res.status(400).json({ message: 'User já cadastrado.' });
+    }
+
+    // Hash da senha antes de salvar no banco de dados
+    bcrypt.hash(senha, 10, (err, hashedPassword) => {
+      if (err) {
+        return res.status(500).json({ message: 'Erro ao gerar hash da senha.' });
+      }
+
+      // Inserir o novo adm com a senha criptografada
+      db.run('INSERT INTO adm (nome, user, senha) VALUES (?, ?, ?)', [nome, user, hashedPassword], function (err) {
+        if (err) {
+          return res.status(500).json({ message: 'Erro ao cadastrar administrador.' });
+        }
+        return res.status(201).json({ id: this.lastID, message: 'Administrador cadastrado com sucesso!' });
+      });
+    });
+  });
+});
 
 // Rota de logout
 app.post('/api/logout', (req, res) => {
@@ -125,6 +154,13 @@ app.get('/usuarios', (req, res) => {
     });
   });
 });
+// Rota para listar todos os adms
+app.get('/adms', (req, res) => {
+    db.all('SELECT id_adm, nome, user FROM adm', [], (err, rows) => {
+      if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
+      res.json({ adms: rows });
+    });
+  });
 
 // Rota para deletar um usuário por ID (protegida por autenticação)
 app.delete('/usuarios/:id_usuario', (req, res) => {
