@@ -68,6 +68,59 @@ app.get('/api/usuarios/me', (req, res) => {
     });
   });
 });
+// Função para verificar as credenciais do usuário utilizando bcrypt.compare
+const verificarCredenciaisADM = (user, senha, callback) => {
+  db.get('SELECT * FROM adm WHERE user = ?', [user], (err, row) => {
+    if (err) return callback(err);
+    if (!row) return callback(null, null); // Usuário não encontrado
+
+    bcrypt.compare(senha, row.senha, (err, isMatch) => {
+      if (err) return callback(err);
+      if (isMatch) {
+        return callback(null, row); // Credenciais corretas
+      } else {
+        return callback(null, null); // Senha incorreta
+      }
+    });
+  });
+};
+
+// Rota de login ADM
+app.post('/api/login/adm', (req, res) => {
+  const { user, senha } = req.body;
+
+  verificarCredenciaisADM(user, senha, (err, adm) => {
+    if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
+    if (!adm) return res.status(401).json({ message: 'Credenciais inválidas.' });
+
+    const token = jwt.sign({ id: adm.id_adm }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Configure o cookie com o token
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use HTTPS em produção
+      sameSite: 'Strict', // Ou 'Lax'
+      maxAge: 3600000, // 1 hora
+    });
+
+    return res.status(200).json({ message: 'Login bem-sucedido!', token }); // Incluindo token na resposta
+  });
+});
+
+// Endpoint para verificar o adm logado
+app.get('/api/adms/me', (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) return res.status(401).json({ message: 'Não autorizado.' });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ message: 'Token inválido.' });
+    db.get('SELECT * FROM adm WHERE id_adm = ?', [decoded.id_adm], (err, adm) => {      
+      if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
+      res.json(adm);
+    });
+  });
+});
 
 // Rota para cadastrar um novo usuário
 app.post('/usuarios/novo', (req, res) => {

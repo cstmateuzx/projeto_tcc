@@ -72,7 +72,7 @@
             </div>
             <div class="mb-3">
               <label for="User" class="form-label">User</label>
-              <input type="User" class="form-control" id="User" bind:value={user} placeholder="Digite seu User" required />
+              <input type="text" class="form-control" id="User" bind:value={user} placeholder="Digite seu User" required />
             </div>
             <div class="mb-3">
               <label for="senha" class="form-label">Senha</label>

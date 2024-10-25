@@ -8,6 +8,10 @@ export const paginaAtual = writable("login");
 export const irParaLogin = () => {
   paginaAtual.set("login")
 };
+// Função para redirecionar para a página de login de adms
+export const irParaLoginADM = () => {
+  paginaAtual.set("loginadm")
+};
 
 //Cadastro de ADM (Teste)
 export const irParaCadastroADM = () => {
