@@ -1,4 +1,3 @@
-// src/api/server.js
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -13,7 +12,6 @@ const db = new sqlite3.Database('./users.db'); // Conecta ao banco de dados SQLi
 app.use(cors({ credentials: true, origin: 'http://localhost:5173' })); // Permite requisições de outros domínios
 app.use(express.json()); // Use express.json() em vez de body-parser
 app.use(cookieParser());
-
 
 // Função para verificar as credenciais do usuário utilizando bcrypt.compare
 const verificarCredenciais = (email, senha, callback) => {
@@ -62,12 +60,13 @@ app.get('/api/usuarios/me', (req, res) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ message: 'Token inválido.' });
-    db.get('SELECT * FROM usuario WHERE id_usuario = ?', [decoded.id], (err, usuario) => {      
+    db.get('SELECT * FROM usuario WHERE id_usuario = ?', [decoded.id], (err, usuario) => {
       if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
       res.json(usuario);
     });
   });
 });
+
 // Função para verificar as credenciais do usuário utilizando bcrypt.compare ADM
 const verificarCredenciaisADM = (user, senha, callback) => {
   db.get('SELECT * FROM adm WHERE user = ?', [user], (err, row) => {
@@ -99,13 +98,12 @@ app.post('/api/login/adm', (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Strict',
-      maxAge: 3600000, // 1 hora
+      maxAge: 3600000,
     });
 
     return res.status(200).json({ message: 'Login bem-sucedido!', token });
   });
 });
-
 
 // Endpoint para verificar o adm logado
 app.get('/api/adms/me', (req, res) => {
@@ -115,17 +113,14 @@ app.get('/api/adms/me', (req, res) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ message: 'Token inválido.' });
-    
-    // decoded.id refere-se ao id_adm, pois foi gerado no login
-    db.get('SELECT * FROM adm WHERE id_adm = ?', [decoded.id], (err, adm) => {      
+
+    db.get('SELECT * FROM adm WHERE id_adm = ?', [decoded.id], (err, adm) => {
       if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
       if (!adm) return res.status(404).json({ message: 'Administrador não encontrado.' });
-      res.json(adm); // Retorne o administrador encontrado
+      res.json(adm);
     });
   });
 });
-
-
 
 // Rota para cadastrar um novo usuário
 app.post('/usuarios/novo', (req, res) => {
@@ -156,6 +151,7 @@ app.post('/usuarios/novo', (req, res) => {
     });
   });
 });
+
 // Rota para cadastrar um novo adm
 app.post('/adm/novo', (req, res) => {
   const { nome, user, senha } = req.body;
@@ -196,7 +192,6 @@ app.post('/api/logout', (req, res) => {
   return res.status(200).json({ message: 'Logout realizado com sucesso!' });
 });
 
-
 // Rota para listar todos os usuários (protegida por autenticação)
 app.get('/usuarios', (req, res) => {
   const token = req.cookies.token;
@@ -207,38 +202,56 @@ app.get('/usuarios', (req, res) => {
     if (err) return res.status(401).json({ message: 'Token inválido.' });
 
     db.all('SELECT id_usuario, nome, email, idade FROM usuario', [], (err, rows) => {
-      if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
+      if (err) return res.status(500).json({ message: 'Erro ao listar usuários.' });
       res.json({ usuarios: rows });
     });
   });
 });
-// Rota para listar todos os adms
-app.get('/adms', (req, res) => {
-    db.all('SELECT id_adm, nome, user FROM adm', [], (err, rows) => {
-      if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
-      res.json({ adms: rows });
-    });
-  });
 
-// Rota para deletar um usuário por ID (protegida por autenticação)
+// Rota para editar um usuário
+app.put('/usuarios/:id_usuario', (req, res) => {
+  const { id_usuario } = req.params;
+  const { nome, email, idade, senha } = req.body;
+
+  const usuarioAtualizado = { nome, email, idade };
+
+  // Se a senha foi fornecida, atualizar a senha após criptografá-la
+  if (senha) {
+    bcrypt.hash(senha, 10, (err, hashedPassword) => {
+      if (err) {
+        return res.status(500).json({ message: 'Erro ao gerar hash da senha.' });
+      }
+      usuarioAtualizado.senha = hashedPassword;
+
+      // Atualiza o usuário no banco de dados
+      db.run('UPDATE usuario SET nome = ?, email = ?, idade = ?, senha = ? WHERE id_usuario = ?', 
+        [usuarioAtualizado.nome, usuarioAtualizado.email, usuarioAtualizado.idade, usuarioAtualizado.senha, id_usuario], 
+        function (err) {
+          if (err) return res.status(500).json({ message: 'Erro ao atualizar usuário.' });
+          res.json({ message: 'Usuário atualizado com sucesso!' });
+        });
+    });
+  } else {
+    // Se não houver senha, apenas atualiza os outros campos
+    db.run('UPDATE usuario SET nome = ?, email = ?, idade = ? WHERE id_usuario = ?', 
+      [usuarioAtualizado.nome, usuarioAtualizado.email, usuarioAtualizado.idade, id_usuario], 
+      function (err) {
+        if (err) return res.status(500).json({ message: 'Erro ao atualizar usuário.' });
+        res.json({ message: 'Usuário atualizado com sucesso!' });
+      });
+  }
+});
+
+// Rota para excluir um usuário por ID
 app.delete('/usuarios/:id_usuario', (req, res) => {
-  const token = req.cookies.token;
-
-  if (!token) return res.status(401).json({ message: 'Não autorizado.' });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err) => {
-    if (err) return res.status(401).json({ message: 'Token inválido.' });
-
-    const { id_usuario } = req.params;
-    db.run('DELETE FROM usuario WHERE id_usuario = ?', id_usuario, function (err) {
-      if (err) return res.status(500).json({ message: 'Erro ao deletar usuário.' });
-      res.json({ message: 'Usuário deletado com sucesso!' });
-    });
+  const { id_usuario } = req.params;
+  db.run('DELETE FROM usuario WHERE id_usuario = ?', [id_usuario], function (err) {
+    if (err) return res.status(500).json({ message: 'Erro ao excluir usuário.' });
+    res.json({ message: 'Usuário excluído com sucesso!' });
   });
 });
 
-// Inicie o servidor
-const httpPort = 3000; // Porta do servidor HTTP
-app.listen(httpPort, () => {
-  console.log(`Servidor HTTP rodando na porta ${httpPort}`);
+// Inicia o servidor na porta 3000
+app.listen(3000, () => {
+  console.log('Servidor rodando na porta 3000');
 });
