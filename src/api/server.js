@@ -68,7 +68,7 @@ app.get('/api/usuarios/me', (req, res) => {
     });
   });
 });
-// Função para verificar as credenciais do usuário utilizando bcrypt.compare
+// Função para verificar as credenciais do usuário utilizando bcrypt.compare ADM
 const verificarCredenciaisADM = (user, senha, callback) => {
   db.get('SELECT * FROM adm WHERE user = ?', [user], (err, row) => {
     if (err) return callback(err);
@@ -95,17 +95,17 @@ app.post('/api/login/adm', (req, res) => {
 
     const token = jwt.sign({ id: adm.id_adm }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Configure o cookie com o token
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use HTTPS em produção
-      sameSite: 'Strict', // Ou 'Lax'
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
       maxAge: 3600000, // 1 hora
     });
 
-    return res.status(200).json({ message: 'Login bem-sucedido!', token }); // Incluindo token na resposta
+    return res.status(200).json({ message: 'Login bem-sucedido!', token });
   });
 });
+
 
 // Endpoint para verificar o adm logado
 app.get('/api/adms/me', (req, res) => {
@@ -115,12 +115,17 @@ app.get('/api/adms/me', (req, res) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ message: 'Token inválido.' });
-    db.get('SELECT * FROM adm WHERE id_adm = ?', [decoded.id_adm], (err, adm) => {      
+    
+    // decoded.id refere-se ao id_adm, pois foi gerado no login
+    db.get('SELECT * FROM adm WHERE id_adm = ?', [decoded.id], (err, adm) => {      
       if (err) return res.status(500).json({ message: 'Erro interno do servidor.' });
-      res.json(adm);
+      if (!adm) return res.status(404).json({ message: 'Administrador não encontrado.' });
+      res.json(adm); // Retorne o administrador encontrado
     });
   });
 });
+
+
 
 // Rota para cadastrar um novo usuário
 app.post('/usuarios/novo', (req, res) => {

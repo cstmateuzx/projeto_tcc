@@ -18,6 +18,11 @@ export const irParaCadastroADM = () => {
   paginaAtual.set("cadadm")
 };
 
+//Home de ADM (Teste)
+export const irParaHomeADM = () => {
+  paginaAtual.set("homeadm")
+};
+
 // Função para redirecionar para a página de agendamento
 export const irParaAgendamento = () => {
   sessionStore.subscribe((token) => {

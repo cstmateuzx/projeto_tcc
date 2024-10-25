@@ -1,6 +1,6 @@
 <script>
     import { sessionStore } from "../stores/session"; // Para armazenar o token
-    import { irParaHome, irParaCadastro, irParaCadastroADM} from "../stores/navigation"; // Para redirecionar
+    import { irParaHome, irParaCadastro, irParaCadastroADM, irParaHomeADM} from "../stores/navigation"; // Para redirecionar
     import { api_base_url } from "../stores/navigation"; // Base da URL da API
   
     let user = "";
@@ -30,6 +30,7 @@
           sessionStore.set(data.token); // Armazena o token JWT no sessionStore
           user = "";
           senha = "";
+          irParaHomeADM(); //Encaminha para home de ADM
         } else {
           resultado = null;
           error = true;

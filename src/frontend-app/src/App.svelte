@@ -6,6 +6,7 @@
   import Agendamento from "./pages/Agendamento.svelte";
   import CadastroAdm from "./pages/CadastroADM.svelte";
     import LoginAdm from "./pages/LoginADM.svelte";
+    import HomeAdm from "./pages/HomeADM.svelte";
 
   
   let nome = "";
@@ -59,4 +60,8 @@
 
 {#if $paginaAtual === "loginadm"}
   <LoginAdm/>
+{/if}
+
+{#if $paginaAtual === "homeadm"}
+  <HomeAdm/>
 {/if}
