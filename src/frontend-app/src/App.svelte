@@ -1,67 +1,68 @@
 <script>
-  import { paginaAtual, irParaLogin, irParaCadastro, irParaHome } from "./stores/navigation";
+  import {
+    paginaAtual,
+    irParaLogin,
+    irParaCadastro,
+    irParaHome,
+    irParaAgendamento,
+    irParaCadastroADM,
+    irParaCadastroSRC,
+    irParaHomeADM,
+    irParaLoginADM
+  } from "./stores/navigation";
   import Home from "./pages/Home.svelte";
   import Login from "./pages/Login.svelte";
   import Cadastro from "./pages/Cadastro.svelte";
   import Agendamento from "./pages/Agendamento.svelte";
-  import CadastroAdm from "./pages/CadastroADM.svelte";
-    import LoginAdm from "./pages/LoginADM.svelte";
-    import HomeAdm from "./pages/HomeADM.svelte";
-
-  
-  let nome = "";
-  let email = "";
-  let senha = "";
-  let idade = "";
-  let conf_senha = "";
-  let usuarios = null;
-  let colunas_usuarios = null;
-  let mensagem = "";
-  let error = false;
-  let resultado = null;
+  import AdministracaoAdmins from "./pages/components/AdministracaoAdmins.svelte";
+  import AdministracaoUsuarios from "./pages/components/AdministracaoUsuarios.svelte";
+  import AdministracaoServicos from "./pages/components/AdministracaoServicos.svelte";
+  import HomeAdm from "./pages/HomeAdm.svelte";
+  import CadastroSrc from "./pages/CadastroSRC.svelte";
+  import AdmnistracaoPages from "./pages/admnistracaoPages.svelte";
 </script>
 
 {#if $paginaAtual === "home"}
-  <Home irParaLogin={irParaLogin} irParaCadastro={irParaCadastro} />
+  <Home />
 {/if}
 
 {#if $paginaAtual === "login"}
-  <Login 
-    email={email} 
-    senha={senha} 
-    error={error} 
-    usuarios={usuarios}
-    colunas_usuarios={colunas_usuarios}
-    mensagem={mensagem} 
-    resultado={resultado} 
-  />
+  <Login />
 {/if}
 
 {#if $paginaAtual === "cadastro"}
-  <Cadastro 
-    nome={nome} 
-    email={email} 
-    idade={idade} 
-    senha={senha} 
-    conf_senha={conf_senha} 
-    error={error} 
-    resultado={resultado} 
-  />
+  <Cadastro />
 {/if}
 
-
 {#if $paginaAtual === "agendamento"}
-  <Agendamento/>
+  <Agendamento />
 {/if}
 
 {#if $paginaAtual === "cadadm"}
-  <CadastroAdm/>
-{/if}
-
-{#if $paginaAtual === "loginadm"}
-  <LoginAdm/>
+  <CadastrarAdmin />
 {/if}
 
 {#if $paginaAtual === "homeadm"}
-  <HomeAdm/>
+  <HomeAdm />
 {/if}
+
+{#if $paginaAtual === "cadsrc"}
+  <CadastroSrc />
+{/if}
+
+{#if $paginaAtual === "adm"}
+  <AdmnistracaoPages />
+{/if}
+
+{#if $paginaAtual === "admadm"}
+  <AdministracaoAdmins />
+{/if}
+
+{#if $paginaAtual === "admuser"}
+  <AdministracaoUsuarios />
+{/if}
+
+{#if $paginaAtual === "admservico"}
+  <AdministracaoServicos />
+{/if}
+
